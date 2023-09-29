@@ -17,7 +17,12 @@ craneLib.overrideScope (self: prev: {
     );
 
   # functions that don't lower to `mkCargoDerivation` or lower too late it requires `args.src`
-  buildDepsOnly = args: prev.buildDepsOnly (self.args // self.argsDepsOnly // args);
+  buildDepsOnly = args: prev.buildDepsOnly
+    (lib.traceVal (
+      { CARGO_PROFILE = self.cargoProfile; }
+      // self.args // self.argsDepsOnly // args
+    ));
+
   crateNameFromCargoToml = args: prev.crateNameFromCargoToml (self.args // args);
   mkDummySrc = args: prev.mkDummySrc (self.args // args);
   buildPackage = args: prev.buildPackage (self.args // args);
