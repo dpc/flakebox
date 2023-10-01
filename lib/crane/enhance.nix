@@ -1,4 +1,7 @@
-{ pkgs, ... }:
+{ pkgs
+, mergeArgs
+, ...
+}:
 let lib = pkgs.lib; in craneLib:
 craneLib.overrideScope' (self: prev: {
   cargoProfile = "release";
@@ -13,21 +16,21 @@ craneLib.overrideScope' (self: prev: {
 
   argsDepsOnly = { };
 
-  mkCargoDerivation = args: prev.mkCargoDerivation (lib.trace (self.args.buildInputs or null) lib.traceVal (
+  mkCargoDerivation = args: prev.mkCargoDerivation (
     { CARGO_PROFILE = self.cargoProfile; }
-    // self.args // args
-  ));
+    // (mergeArgs self.args args)
+  );
 
   # functions that don't lower to `mkCargoDerivation` or lower too late it requires `args.src`
   buildDepsOnly = args: prev.buildDepsOnly (
     { CARGO_PROFILE = self.cargoProfile; }
-    // self.args // self.argsDepsOnly // args
+    // (mergeArgs (mergeArgs self.args self.argsDepsOnly) args)
   );
 
-  crateNameFromCargoToml = args: prev.crateNameFromCargoToml (self.args // args);
-  mkDummySrc = args: prev.mkDummySrc (self.args // args);
+  crateNameFromCargoToml = args: prev.crateNameFromCargoToml (mergeArgs self.args args);
+  mkDummySrc = args: prev.mkDummySrc (mergeArgs self.args args);
   buildPackage = args: prev.buildPackage (
-    let mergedArgs = self.args // args; in (mergedArgs // {
+    let mergedArgs = mergeArgs self.args args; in (mergedArgs // {
       # implicit deps building is breaking caching somehow, so we need to do it ourselves here
       cargoArtifacts = mergedArgs.cargoArtifacts or (
         self.buildDepsOnly (mergedArgs // {
@@ -39,9 +42,9 @@ craneLib.overrideScope' (self: prev: {
         }));
     })
   );
-  buildTrunkPackage = args: prev.buildTrunkPackage (self.args // args);
+  buildTrunkPackage = args: prev.buildTrunkPackage (mergeArgs self.args args);
   # causes issues
-  vendorCargoDeps = args: prev.vendorCargoDeps (self.args // args);
+  vendorCargoDeps = args: prev.vendorCargoDeps (mergeArgs self.args args);
 
   buildWorkspaceDepsOnly = origArgs:
     let
@@ -51,9 +54,11 @@ craneLib.overrideScope' (self: prev: {
     self.buildDepsOnly
       ((lib.optionalAttrs (pname != null) {
         inherit pname;
-      }) // {
-        buildPhaseCargoCommand = "cargoWithProfile doc --workspace --locked ; cargoWithProfile check --workspace --all-targets --locked ; cargoWithProfile build --locked --workspace --all-targets";
-      } // args);
+      }) // (mergeArgs
+        {
+          buildPhaseCargoCommand = "cargoWithProfile doc --workspace --locked ; cargoWithProfile check --workspace --all-targets --locked ; cargoWithProfile build --locked --workspace --all-targets";
+        }
+        args));
 
   buildWorkspace = origArgs:
     let
@@ -63,10 +68,12 @@ craneLib.overrideScope' (self: prev: {
     self.mkCargoDerivation (
       ((lib.optionalAttrs (pname != null) {
         inherit pname;
-      }) // {
-        buildPhaseCargoCommand = "cargoWithProfile doc --workspace --locked ; cargoWithProfile check --workspace --all-targets --locked ; cargoWithProfile build --locked --workspace --all-targets";
-        doCheck = false;
-      } // args)
+      }) // (mergeArgs
+        {
+          buildPhaseCargoCommand = "cargoWithProfile doc --workspace --locked ; cargoWithProfile check --workspace --all-targets --locked ; cargoWithProfile build --locked --workspace --all-targets";
+          doCheck = false;
+        }
+        args))
     );
 
   buildCommand = origArgs: self.mkCargoDerivation (
@@ -92,11 +99,13 @@ craneLib.overrideScope' (self: prev: {
       # "--package x --package y" args passed to cargo
       pkgsArgs = lib.strings.concatStringsSep " " (builtins.map (name: "--package ${name}") packages);
 
-      deps = self.buildDepsOnly (args // (lib.optionalAttrs (pname != null) {
-        inherit pname;
-      }) // {
-        buildPhaseCargoCommand = "cargoWithProfile build ${pkgsArgs}";
-      });
+      deps = self.buildDepsOnly (mergeArgs args (
+        (lib.optionalAttrs (pname != null) {
+          inherit pname;
+        }) // {
+          buildPhaseCargoCommand = "cargoWithProfile build ${pkgsArgs}";
+        }
+      ));
     in
     self.buildPackage (args // (lib.optionalAttrs (pname != null) {
       inherit pname;
@@ -107,10 +116,10 @@ craneLib.overrideScope' (self: prev: {
     });
 
 
-  overrideArgs = f: self.overrideScope' (self: prev: { args = prev.args // f prev.args; });
-  overrideArgs' = f: self.overrideScope' (self: prev: { args = prev.args // f self prev.args; });
-  overrideArgsDepsOnly = f: self.overrideScope' (self: prev: { argsDepsOnly = prev.argsDepsOnly // f prev.argsDepsOnly; });
-  overrideArgsDepsOnly' = f: self.overrideScope' (self: prev: { argsDepsOnly = prev.argsDepsOnly // f self prev.argsDepsOnly; });
+  overrideArgs = f: self.overrideScope' (self: prev: { args = mergeArgs (prev.args) (f prev.args); });
+  overrideArgs' = f: self.overrideScope' (self: prev: { args = mergeArgs (prev.args) (f self prev.args); });
+  overrideArgsDepsOnly = f: self.overrideScope' (self: prev: { argsDepsOnly = mergeArgs (prev.argsDepsOnly) (f prev.argsDepsOnly); });
+  overrideArgsDepsOnly' = f: self.overrideScope' (self: prev: { argsDepsOnly = mergeArgs (prev.argsDepsOnly) (f self prev.argsDepsOnly); });
   overrideProfile = cargoProfile: self.overrideScope' (self: prev: { inherit cargoProfile; });
   mapWithProfiles = f: profiles: builtins.listToAttrs (builtins.map (cargoProfile: { name = cargoProfile; value = f (self.overrideProfile cargoProfile); }) profiles);
 })
