@@ -29,7 +29,9 @@ let
     ''
     else "";
 
-  args = cleanedArgs // {
+  args = {
+    strictDeps = true;
+  } // cleanedArgs // {
     packages =
       packages ++ [
         flakeboxBin

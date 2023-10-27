@@ -21,7 +21,9 @@ let
   ];
 in
 let
-  args = cleanedArgs // {
+  args = {
+    strictDeps = true;
+  } // cleanedArgs // {
     packages =
       packages ++ [
         toolchain.toolchain
