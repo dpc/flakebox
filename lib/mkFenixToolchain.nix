@@ -58,6 +58,15 @@ let
     LLVM_CONFIG_PATH_native = "${nativeLLvmConfigPkg}/bin/llvm-config";
     "LLVM_CONFIG_PATH_${target_underscores}" = "${nativeLLvmConfigPkg}/bin/llvm-config";
 
+    "CC_${target_underscores}" = "${clang}/bin/clang";
+    "CXX_${target_underscores}" = "${clang}/bin/clang++";
+    # setting CC and CXX can't be done via a standard, but if we set `stdenv`
+    # craneLib # will pick up from `args`, and `mkDevShell` will handle manually
+    # for some reason then we need to set `CC` and `CXX` here as well
+    "CC" = "${clang}/bin/clang";
+    "CXX" = "${clang}/bin/clang++";
+    stdenv = clang.stdenv;
+
     # bindgen expect native clang available here, so it's OK to set it globally,
     # should not break cross-compilation
     LIBCLANG_PATH = "${libclang.lib}/lib/";

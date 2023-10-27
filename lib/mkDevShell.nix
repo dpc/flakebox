@@ -23,6 +23,11 @@ let
   ];
 in
 let
+  mkShell =
+    if toolchain.shellArgs ? stdenv then
+      pkgs.mkShell.override { stdenv = toolchain.shellArgs.stdenv; }
+    else
+      pkgs.mkShell;
   flakeboxInit =
     if config.flakebox.init.enable
     then ''
@@ -84,6 +89,6 @@ let
     '';
   };
 in
-pkgs.mkShell (
+mkShell (
   mergeArgs toolchain.shellArgs args
 )
