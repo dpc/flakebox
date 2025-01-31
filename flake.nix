@@ -60,6 +60,7 @@
         flakeboxLib = mkLib pkgs {
           config = {
             github.ci.cachixRepo = "rustshop";
+            github.ci.flakeSelfCheck.enable = false;
             just.importPaths = [
               "justfile.custom"
             ];
