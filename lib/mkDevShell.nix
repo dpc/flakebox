@@ -43,8 +43,7 @@ let
 
   args = mergeArgs cleanedArgs {
     packages =
-      packages
-      ++ [
+      [
         flakeboxBin
 
         (toolchain.toolchain)
@@ -58,7 +57,6 @@ let
         (pkgs.hiPrio pkgs.bashInteractive)
 
       ]
-      ++ config.env.shellPackages
       ++ (builtins.attrValues {
         # Core & generic
         inherit (pkgs)
@@ -74,7 +72,10 @@ let
         # TODO: make conditional on `config.just.enable`
         inherit (pkgs) just;
       })
-      ++ toolchain.toolchain.packages or [ ];
+      ++ toolchain.toolchain.packages or [ ]
+      # Note: order seems important, direct args should have priority
+      ++ config.env.shellPackages
+      ++ packages;
 
     buildInputs =
       lib.optionals pkgs.stdenv.isDarwin [

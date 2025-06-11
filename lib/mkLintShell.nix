@@ -34,12 +34,10 @@ let
     if toolchain ? stdenv then pkgs.mkShell.override { stdenv = toolchain.stdenv; } else pkgs.mkShell;
   args = cleanedArgs // {
     packages =
-      packages
-      ++ [
+      [
         toolchain.toolchain
         rustfmt
       ]
-      ++ config.env.shellPackages
       ++ (builtins.attrValues {
         # Core & generic
         inherit (pkgs)
@@ -52,7 +50,10 @@ let
         inherit (pkgs) nixfmt-rfc-style;
         # TODO: make conditional on `config.just.enable`
         inherit (pkgs) just;
-      });
+      })
+      # Note: order seems important, direct args should have priority
+      ++ config.env.shellPackages
+      ++ packages;
 
     shellHook = ''
       # set the root dir
