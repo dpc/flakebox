@@ -178,6 +178,7 @@ lib.makeScope pkgs.newScope (
         buildInputs = l.buildInputs or [ ] ++ r.buildInputs or [ ];
         nativeBuildInputs = l.nativeBuildInputs or [ ] ++ r.nativeBuildInputs or [ ];
         packages = l.packages or [ ] ++ r.packages or [ ];
+        env = l.env or { } // r.env or { };
       };
   }
 )
