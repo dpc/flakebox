@@ -112,7 +112,7 @@ craneLib.overrideScope (
           inherit pname;
         })
         // {
-          buildPhaseCargoCommand = "cargoWithProfile doc --workspace --locked ; cargoWithProfile check --workspace --all-targets --locked ; cargoWithProfile build --locked --workspace --all-targets";
+          buildPhaseCargoCommand = "cargoWithProfile check --workspace --all-targets --locked ; cargoWithProfile doc --workspace --locked --no-deps; cargoWithProfile build --locked --workspace --all-targets";
         }
         // args
       );
@@ -135,7 +135,7 @@ craneLib.overrideScope (
             inherit pname;
           })
           // {
-            buildPhaseCargoCommand = "cargoWithProfile doc --workspace --locked ; cargoWithProfile check --workspace --all-targets --locked ; cargoWithProfile build --locked --workspace --all-targets";
+            buildPhaseCargoCommand = "cargoWithProfile check --workspace --all-targets --locked ; cargoWithProfile doc --workspace --locked --no-deps; cargoWithProfile build --locked --workspace --all-targets";
             doCheck = false;
           }
           // args
