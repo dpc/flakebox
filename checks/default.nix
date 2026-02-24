@@ -19,6 +19,7 @@ onlyDrvs (
       workspaceSanity = callPackage ./workspace-sanity { };
       workspaceCross = callPackage ./workspace-cross-compile { inherit full; };
       customStdenv = callPackage ./custom-stdenv { };
+      nextest = callPackage ./nextest { };
     }
   )
 )
