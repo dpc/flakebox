@@ -20,6 +20,7 @@ onlyDrvs (
       workspaceCross = callPackage ./workspace-cross-compile { inherit full; };
       customStdenv = callPackage ./custom-stdenv { };
       nextest = callPackage ./nextest { };
+      mergeArgsTests = callPackage ./mergeArgs-tests.nix { };
     }
   )
 )
