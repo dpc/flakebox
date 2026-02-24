@@ -90,7 +90,15 @@ craneLib.overrideScope (
 
     buildTrunkPackage = args: prev.buildTrunkPackage (mergeArgs self.args args);
 
-    cargoAudit = args: prev.cargoAudit (mergeArgs self.args args);
+    cargoNextest =
+      args:
+      prev.cargoNextest (
+        mergeArgs {
+          env = {
+            NEXTEST_SHOW_PROGRESS = "none";
+          };
+        } args
+      );
 
     # causes issues
     vendorCargoDeps = args: prev.vendorCargoDeps (mergeArgs self.args args);
