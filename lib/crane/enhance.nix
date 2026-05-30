@@ -222,7 +222,7 @@ craneLib.overrideScope (
         })
         // {
           cargoArtifacts = deps;
-          meta = {
+          meta = lib.optionalAttrs (mainProgram != null) {
             inherit mainProgram;
           };
           cargoExtraArgs = "${pkgsArgs}";

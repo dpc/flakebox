@@ -146,7 +146,7 @@ lib.makeScope pkgs.newScope (
         pkgs.llvmPackages.clang-unwrapped
       else
         pkgs.llvmPackages_18.clang-unwrapped;
-    defaultStdenv = p: if pkgs.stdenv.isDarwin then pkgs.llvmPackages_18.stdenv else pkgs.stdenv;
+    defaultStdenv = p: if pkgs.stdenv.isDarwin then pkgs.llvmPackages.stdenv else pkgs.stdenv;
 
     mkTarget = callPackage ./mkTarget.nix { };
     mkAndroidTarget = callPackage ./mkAndroidTarget.nix { };

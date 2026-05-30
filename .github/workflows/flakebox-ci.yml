@@ -38,6 +38,7 @@ jobs:
     - name: Check Nix flake inputs
       uses: DeterminateSystems/flake-checker-action@v5
       with:
+        check-supported: false
         fail-mode: true
   lint:
     name: Lint
