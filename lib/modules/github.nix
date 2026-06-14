@@ -24,6 +24,11 @@ in
         enable = lib.mkEnableOption "flake self-check" // {
           default = true;
         };
+        checkSupported = lib.mkOption {
+          type = types.bool;
+          description = "Whether flake self-check verifies that Nixpkgs inputs use supported Git refs.";
+          default = true;
+        };
       };
 
       runsOn = lib.mkOption {
@@ -170,6 +175,7 @@ in
                     name = "Check Nix flake inputs";
                     uses = "DeterminateSystems/flake-checker-action@v5";
                     "with" = {
+                      "check-supported" = config.github.ci.flakeSelfCheck.checkSupported;
                       fail-mode = true;
                     };
                   }
