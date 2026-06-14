@@ -1,11 +1,14 @@
 { pkgs, flakeboxLib }:
 let
 
+  llvmPackages = if pkgs.stdenv.isDarwin then pkgs.llvmPackages else pkgs.llvmPackages_18;
+  clangMajor = pkgs.lib.versions.major llvmPackages.clang.version;
+
   toolchainArgs = {
-    stdenv = p: p.clang18Stdenv;
-    clang = pkgs.llvmPackages_18.clang;
-    libclang = pkgs.llvmPackages_18.libclang.lib;
-    clang-unwrapped = pkgs.llvmPackages_18.clang-unwrapped;
+    stdenv = p: llvmPackages.stdenv;
+    clang = llvmPackages.clang;
+    libclang = llvmPackages.libclang.lib;
+    clang-unwrapped = llvmPackages.clang-unwrapped;
   };
 
   toolchainsStd = flakeboxLib.mkStdFenixToolchains toolchainArgs;
@@ -29,11 +32,11 @@ let
             src = ./.;
             buildPhaseCargoCommand = ''
               set -x
-              if [[ "$(${pkgs.which}/bin/which cc)" != *clang-wrapper-18* ]]; then
+              if [[ "$(${pkgs.which}/bin/which cc)" != *clang-wrapper-${clangMajor}* ]]; then
                 set +x
                 exit 1
               fi
-              if [[ "$CARGO_TARGET_${target_underscores_upper}_LINKER" != *clang-wrapper-18* ]]; then
+              if [[ "$CARGO_TARGET_${target_underscores_upper}_LINKER" != *clang-wrapper-${clangMajor}* ]]; then
                 set +x
                 exit 1
               fi

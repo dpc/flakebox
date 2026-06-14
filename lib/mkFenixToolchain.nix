@@ -79,9 +79,11 @@ let
       { };
 
   # this can't be a method on `craneLib` because it basically constructs the `craneLib`
-  craneLib = (enhanceCrane ((crane.mkLib pkgs).overrideToolchain toolchain)).overrideArgs (
-    (mergeArgs commonArgs buildArgs) // { inherit stdenv; }
-  );
+  craneLib =
+    (enhanceCrane (
+      ((crane.mkLib pkgs).overrideToolchain toolchain).overrideScope (_: _: { stdenvSelector = stdenv; })
+    )).overrideArgs
+      (mergeArgs commonArgs buildArgs);
 in
 {
   inherit toolchain;

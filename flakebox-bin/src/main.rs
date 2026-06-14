@@ -245,14 +245,14 @@ fn install_files(src: &Path, dst: &Path) -> AppResult<()> {
             fs::copy(source_path, &dst_path).change_context_lazy(|| AppError::IO)?;
             let _ = cmd!("git", "add", &dst_path).run();
 
-            chmod_non_writeable(&dst_path)?;
+            chmod_non_writable(&dst_path)?;
         }
     }
 
     Ok(())
 }
 
-fn chmod_non_writeable(path: &Path) -> AppResult<()> {
+fn chmod_non_writable(path: &Path) -> AppResult<()> {
     let current_permissions = fs::metadata(path)
         .change_context_lazy(|| AppError::IO)?
         .permissions()

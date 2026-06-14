@@ -2,7 +2,7 @@
   description = "Toolkit for building Nix Flake development environments for Rust projects";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-25.11";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-26.05";
 
     systems.url = "github:nix-systems/default";
     flake-utils.url = "github:numtide/flake-utils";
@@ -119,7 +119,12 @@
 
         flakeboxLib = mkLib pkgs {
           config = {
-            github.ci.cachixRepo = "rustshop";
+            github.ci = {
+              enable = true;
+              cachixRepo = "rustshop";
+              # nixos-26.05 is intentionally ahead of flake-checker's supported branch list.
+              flakeSelfCheck.checkSupported = false;
+            };
             just.importPaths = [
               "justfile.custom"
             ];
