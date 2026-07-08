@@ -113,6 +113,8 @@ lib.makeScope pkgs.newScope (
 
     flakeboxBin = callPackage ./flakeboxBin.nix { };
 
+    cargoCrap = callPackage ./pkgs/cargo-crap.nix { };
+
     filter = callPackage ./filter { };
 
     filterSubPaths = self.filter.filterSubPaths;
