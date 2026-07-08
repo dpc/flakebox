@@ -78,6 +78,11 @@ watch *ARGS="-x run":
   env RUST_LOG=${RUST_LOG:-debug} cargo watch {{ARGS}}
 
 
+# run cargo-crap on the workspace
+crap *ARGS="--workspace":
+  cargo crap {{ARGS}}
+
+
 # run `cargo clippy` on everything
 clippy *ARGS="--locked --offline --workspace --all-targets":
   cargo clippy {{ARGS}} -- --deny warnings --allow deprecated
