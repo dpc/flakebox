@@ -91,3 +91,13 @@ supported toolchains. A nested set with following keys:
 * `<toolchain>.<profile>.<output>` - e.g. `nightly.dev.workspaceDeps`, `aarch64-android.release.flakebox-tutorial` are builds using `<ci>` build profile and `<toolchain>`
 
 See [Tutorial: Flakebox in a New Project](./building-new-project.md) for more information.
+
+## `flakeboxLib.cargoCrap`
+
+`flakeboxLib.cargoCrap` exposes flakebox's packaged `cargo-crap` derivation for
+custom Nix checks and reports.
+
+Most projects should prefer the default `cargo-crap` module integration, which
+adds the tool to dev shells, generates `.cargo-crap.toml`, and provides the
+`just crap` helper. Use `flakeboxLib.cargoCrap` directly when composing custom
+crane derivations, CI report jobs, or baseline/regression gates.
