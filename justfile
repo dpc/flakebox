@@ -80,7 +80,12 @@ watch *ARGS="-x run":
 
 # run cargo-crap on the workspace
 crap *ARGS="--workspace":
-  cargo crap {{ARGS}}
+  #!/usr/bin/env bash
+  set -euo pipefail
+  if [ ! -f Cargo.toml ]; then
+    cd {{invocation_directory()}}
+  fi
+  cargo-crap {{ARGS}}
 
 
 # run `cargo clippy` on everything
