@@ -21,6 +21,7 @@ onlyDrvs (
       customStdenv = callPackage ./custom-stdenv { };
       nextest = callPackage ./nextest { };
       mergeArgsTests = callPackage ./mergeArgs-tests.nix { };
+      cargoCrapModule = callPackage ./cargo-crap-module.nix { inherit mkLib; };
     }
   )
 )

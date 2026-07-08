@@ -82,3 +82,33 @@ Flakebox will automatically link using `mold` on Linux, also taking care of
 some important low level NixOS details.
 
 ### TBD: `cargo` accidental-recompilation prevention
+
+## Gate high CRAP scores with cargo-crap
+
+Flakebox provides `cargo-crap` in development shells by default, generates a
+shared `.cargo-crap.toml`, and adds a `just crap` helper that runs
+`cargo-crap --workspace`.
+
+The pre-commit cargo-crap gate is intentionally opt-in because CRAP checks can be
+more expensive and project-specific than lightweight formatting or spelling
+checks. Enable it when a project has chosen suitable thresholds or coverage
+inputs:
+
+```nix
+{
+  cargo-crap.pre-commit = {
+    enable = true;
+    args = [
+      "--workspace"
+      "--threshold"
+      "100"
+      "--fail-above"
+    ];
+  };
+}
+```
+
+Customize the generated `.cargo-crap.toml` by setting
+`cargo-crap.config.content`. Disable only that generated file with
+`cargo-crap.config.enable = false`, or disable the whole cargo-crap integration
+with `cargo-crap.enable = false`.
