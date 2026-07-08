@@ -34,6 +34,8 @@
     }@inputs:
     let
       overlays.default = final: prev: {
+        cargo-crap = final.callPackage ./lib/pkgs/cargo-crap.nix { };
+
         wild-unwrapped =
           let
             version = "0.9.0";
@@ -189,6 +191,7 @@
         inherit checks;
 
         packages = {
+          cargo-crap = pkgs.cargo-crap;
           bootstrap = pkgs.writeShellScriptBin "flakebox-bootstrap" "exec ${pkgs.bash}/bin/bash ${./bin/bootstrap.sh} ${./bin/bootstrap.flake.nix} \"$@\"";
           root = flakeboxLib.root;
           default = flakeboxLib.flakeboxBin;
