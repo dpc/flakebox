@@ -18,6 +18,14 @@ for Rust developers model of operation that is efficient, easy to understand and
 Flakebox extends the `craneLib` it produced with important additional functionality, built on
 the experiences of patterns useful in non-trivial Rust projects.
 
+### Quiet nextest defaults
+
+Flakebox defaults `cargo nextest` to concise output. Its development shells set
+both `NEXTEST_SHOW_PROGRESS=none` and `NEXTEST_STATUS_LEVEL=none`, and its
+enhanced `craneLib.cargoNextest` applies the same settings to Nix builds.
+Failure output and final failure statuses remain visible. Pass different values
+to `mkDevShell` or `mkShells`, or set them in `cargoNextest`'s `env`, when more
+output is useful.
 
 ### `craneLib.overrideArgs`
 
