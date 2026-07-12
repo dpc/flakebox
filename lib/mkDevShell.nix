@@ -104,6 +104,8 @@ let
     nativeBuildInputs = toolchain.toolchain.nativeBuildInputs or [ ];
 
     JUST_UNSTABLE = "true";
+    NEXTEST_SHOW_PROGRESS = cleanedArgs.NEXTEST_SHOW_PROGRESS or "none";
+    NEXTEST_STATUS_LEVEL = cleanedArgs.NEXTEST_STATUS_LEVEL or "none";
 
     shellHook = ''
       # set the root dir

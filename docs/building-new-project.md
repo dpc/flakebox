@@ -429,7 +429,7 @@ the function used to initialize the library.
 `pkgs` is the nixpkgs package set and `{ }` are the
 configuration arguments (empty set, defaults).
 
-This is where you can enable/disable/configure various features of flakebox. A list of config options can be found [here](./nixos-options.md)
+This is where you can enable, disable, and configure various Flakebox features. To browse all config options locally, run `flakebox docs` from a Flakebox-enabled project. Alternatively, build the latest documentation with `nix build github:rustshop/flakebox#docs` and open `result/index.html`.
 
 The next binding is:
 

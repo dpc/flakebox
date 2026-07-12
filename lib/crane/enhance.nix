@@ -96,6 +96,7 @@ craneLib.overrideScope (
         mergeArgs {
           env = {
             NEXTEST_SHOW_PROGRESS = "none";
+            NEXTEST_STATUS_LEVEL = "none";
           };
         } args
       );

@@ -67,27 +67,24 @@ lib.makeScope pkgs.newScope (
       name = "docs";
       src = ../docs;
 
-      # depend on our options doc derivation
+      # Depend on the generated options reference used by the book.
       buildInputs = [ optionsDocMd ];
 
-      # mkdocs dependencies
+      # mdBook dependencies
       nativeBuildInputs = builtins.attrValues {
         inherit (pkgs) mdbook;
       };
 
-      # symlink our generated docs into the correct folder before generating
+      # Add the generated options reference to the source tree before building.
       buildPhase = ''
         rm -f ./nixos-options.md
         ln -s ${optionsDocMd}/options-doc.md "./nixos-options.md"
-        # generate the site
         mdbook build
       '';
 
       # copy the resulting output to the derivation's $out directory
       installPhase = ''
         mv book $out
-        # copy the md file so it's easy to update the checked-in version
-        cp ./nixos-options.md $out/
       '';
     };
 
