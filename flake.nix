@@ -185,6 +185,7 @@
           }
           // {
             flakebox = flakeboxLib.flakeboxBin;
+            docs = flakeboxLib.docs;
           };
       in
       {
