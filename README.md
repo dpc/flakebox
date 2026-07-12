@@ -77,10 +77,12 @@ If you're looking for more interactive conversation, join [Flakebox Matrix chann
 The best way to view the Flakebox documentation is by running:
 
 ```
-nix build github:rustshop/flakebox#docs && xdg-open result/index.html
+nix build github:rustshop/flakebox#docs
 ```
 
-In projects already using Flakebox, the documentation can be accessed using `flakebox docs` command.
+Then open `result/index.html` in a browser.
+
+In projects already using Flakebox, the documentation can be accessed using the `flakebox docs` command.
 
 # ToC
 
@@ -105,6 +107,6 @@ In projects already using Flakebox, the documentation can be accessed using `fla
 - [Darwin (MacOS) toolchains](./docs/darwin-toolchains.md)
 - [Android toolchains](./docs/android-toolchains.md)
 - [iOS toolchains](./docs/ios-toolchains.md)
-- [Config Options](./docs/nixos-options.md)
+- Config options: run `flakebox docs`, or `nix build github:rustshop/flakebox#docs`; then open `result/index.html` in a browser
 
 <!-- WARNING: THIS FILE IS AUTO-GENERATED. EDIT ./docs/README.md instead -->
