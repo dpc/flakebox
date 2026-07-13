@@ -5,17 +5,37 @@ git diff-files --quiet
 is_unclean=$?
 set -e
 
-# Revert `git stash` on exit
-function revert_git_stash {
-  >&2 echo "Unstashing uncommitted changes..."
-  git stash pop -q
+# Restore the worktree patch captured by this hook.
+function restore_flakebox_worktree {
+  local hook_status=$?
+  trap - EXIT
+
+  if ! git cat-file blob "$FLAKEBOX_GIT_PATCH_OID" | git apply --whitespace=nowarn; then
+    >&2 echo "flakebox: error: could not restore uncommitted changes; recover the patch from $FLAKEBOX_GIT_PATCH_REF"
+    [ "$hook_status" -ne 0 ] || hook_status=1
+  else
+    git update-ref -d "$FLAKEBOX_GIT_PATCH_REF" "$FLAKEBOX_GIT_PATCH_OID"
+  fi
+
+  exit "$hook_status"
 }
 
-# Stash pending changes and revert them when script ends
-if [ -z "${NO_STASH:-}" ] && [ $is_unclean -ne 0 ]; then
-  >&2 echo "Stashing uncommitted changes..."
-  GIT_LITERAL_PATHSPECS=0 git stash -q --keep-index
-  trap revert_git_stash EXIT
+# Hide tracked worktree changes during checks and restore them on exit. Store
+# the binary patch under a private ref so recovery remains possible on failure.
+# Jujutsu has no staged/unstaged distinction, and manipulating its colocated
+# Git index can race with Jujutsu snapshots, so checks use its current tree.
+flakebox_git_root="$(git rev-parse --show-toplevel)"
+if [ -z "${NO_STASH:-}" ] &&
+  [ $is_unclean -ne 0 ] &&
+  [ ! -e "$flakebox_git_root/.jj" ]; then
+  FLAKEBOX_GIT_PATCH_OID="$(
+    git diff-files --binary --full-index --no-ext-diff |
+      git hash-object -w --stdin
+  )"
+  FLAKEBOX_GIT_PATCH_REF="refs/flakebox/pre-commit/$$-$RANDOM"
+  git update-ref "$FLAKEBOX_GIT_PATCH_REF" "$FLAKEBOX_GIT_PATCH_OID" ""
+  trap restore_flakebox_worktree EXIT
+  GIT_LITERAL_PATHSPECS=0 git restore --worktree -- .
 fi
 
 export FLAKEBOX_GIT_LS
@@ -31,9 +51,3 @@ if [ -z "${FLAKEBOX_GIT_LS_TEXT_IGNORE:-}" ]; then
 else
   FLAKEBOX_GIT_LS_TEXT="$(echo "$FLAKEBOX_GIT_LS" | grep -v -E "\.(png|ods|jpg|jpeg|woff2|keystore|wasm|ttf|jar|ico|gif)\$" | grep -v -E "${FLAKEBOX_GIT_LS_TEXT_IGNORE}")"
 fi
-
-
-function check_nothing() {
-  true
-}
-export -f check_nothing
