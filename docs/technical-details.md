@@ -31,6 +31,23 @@ all the enabled linters run both in git's `pre-commit` hook, and in the CI, etc.
 The goal is to get by default a level of end to end polish that only the largest
 and most mature projects usually have, all in just few lines of Nix code.
 
+### Pre-commit timing diagnostics
+
+The generated pre-commit hook runs every enabled check with GNU Parallel. Each
+worker uses a monotonic clock around the check itself, so time spent waiting for
+a worker slot is excluded. A check that takes strictly longer than one second
+emits a diagnostic such as:
+
+```text
+flakebox: warning: check_semgrep took 1.235s (>1s)
+```
+
+The fixed three-digit fraction reports the duration at millisecond precision.
+The strict threshold still uses the underlying monotonic measurement, and a
+barely-over-threshold result is displayed as `1.001s` rather than a misleading
+`1.000s`. Timing is diagnostic only: checks still run with the same
+concurrency, output, exit status, and signal behavior.
+
 ## Flakebox `lib` output
 
 Flakebox's Flake exposes a `lib` flake output which allows:
