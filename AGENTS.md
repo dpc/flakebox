@@ -37,6 +37,13 @@ When changing generation logic, edit the source files in `lib/` or `docs/`, then
 
 - Before committing, run: `nix develop -c selfci check`
 - This repo enforces formatting in CI/local CI.
+- Pure timer formatting and signal-state logic belongs in
+  `lib/pkgs/git-hook-check-timer-tests.rs`.
+- Generated hook, Git, GNU Parallel, output, status, signal, and cleanup
+  behavior belongs in `checks/git-hooks.nix`.
+- Changes to the hook generator or runner require behavioral coverage and
+  regeneration with `nix develop -c flakebox install`.
+- The flake check matrix validates supported Linux and macOS hosts in CI.
 - If `flakebox install` says files are stale, regenerate before finishing.
 
 ## Common modification map
