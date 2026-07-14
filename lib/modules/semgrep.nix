@@ -23,17 +23,14 @@
       semgrep = ''
         # semgrep is not available on MacOS
         if ! command -v semgrep > /dev/null ; then
-          >&2 echo "Skipping semgrep check: not available"
           return 0
         fi
 
         if [ ! -f .config/semgrep.yaml ] ; then
-          >&2 echo "Skipping semgrep check: .config/semgrep.yaml doesn't exist"
           return 0
         fi
 
         if [ ! -s .config/semgrep.yaml ] ; then
-          >&2 echo "Skipping semgrep check: .config/semgrep.yaml empty"
           return 0
         fi
 

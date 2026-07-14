@@ -22,7 +22,7 @@ onlyDrvs (
       nextest = callPackage ./nextest { };
       mergeArgsTests = callPackage ./mergeArgs-tests.nix { };
       cargoCrapModule = callPackage ./cargo-crap-module.nix { inherit mkLib; };
-      gitHooks = callPackage ./git-hooks.nix { };
+      gitHooks = callPackage ./git-hooks.nix { inherit mkLib; };
     }
   )
 )
