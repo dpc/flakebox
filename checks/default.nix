@@ -21,6 +21,7 @@ onlyDrvs (
       customStdenv = callPackage ./custom-stdenv { };
       nextest = callPackage ./nextest { };
       mergeArgsTests = callPackage ./mergeArgs-tests.nix { };
+      craneMultiBuildTests = callPackage ./crane-multi-build-tests.nix { };
       cargoCrapModule = callPackage ./cargo-crap-module.nix { inherit mkLib; };
       gitHooks = callPackage ./git-hooks.nix { inherit mkLib; };
     }
