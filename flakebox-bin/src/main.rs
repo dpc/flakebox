@@ -37,22 +37,25 @@ fn main() -> AppResult<()> {
     match opts.command {
         Commands::Init => init(&opts)?,
         Commands::Install => install(&opts)?,
-        Commands::Docs { docs_dir } => {
-            if let Some(docs_dir) = docs_dir {
-                let docs_index = docs_dir.join("index.html");
-                eprintln!("Opening docs available at {}", docs_index.display());
-                cmd!("xdg-open", docs_index)
-                    .run()
-                    .change_context(AppError::General)?;
-            } else {
+        Commands::Docs { docs_dir } => docs_dir.map_or_else(
+            || {
                 cmd!("nix", "build", "github:rustshop/flakebox#docs")
                     .run()
                     .change_context(AppError::General)?;
                 cmd!("xdg-open", "result/index.html")
                     .run()
                     .change_context(AppError::General)?;
-            }
-        }
+                Ok::<(), error_stack::Report<AppError>>(())
+            },
+            |docs_dir| {
+                let docs_index = docs_dir.join("index.html");
+                eprintln!("Opening docs available at {}", docs_index.display());
+                cmd!("xdg-open", docs_index)
+                    .run()
+                    .change_context(AppError::General)?;
+                Ok::<(), error_stack::Report<AppError>>(())
+            },
+        )?,
         Commands::Lint { fix, silent } => match lint(&opts, fix, silent) {
             Err(e) if e.current_context() == &AppError::Lint => std::process::exit(1),
             other => other,
@@ -172,11 +175,7 @@ fn item_as_table_mut<'item>(
 ) -> &'item mut toml_edit::Table {
     if !item.is_table() {
         let owned = std::mem::take(item);
-        *item = toml_edit::Item::Table(
-            owned
-                .into_table()
-                .unwrap_or_else(|_| panic!("{invalid_message}")),
-        );
+        *item = toml_edit::Item::Table(owned.into_table().expect(invalid_message));
     }
 
     item.as_table_mut()
@@ -186,17 +185,14 @@ fn item_as_table_mut<'item>(
 fn lint_cargo_toml(opts: &Opts, problems: &mut Vec<LintItem>) -> AppResult<()> {
     let (path, cargo_toml) = load_root_cargo_toml(opts)?;
 
-    if let Some(toml_edit::Item::Table(workspace)) = cargo_toml.get("workspace") {
-        match workspace.get("resolver") {
-            Some(toml_edit::Item::Value(toml_edit::Value::String(v))) if v.value() == "2" => {}
-            _ => {
-                problems.push(LintItem {
-                    path: path.clone(),
-                    msg: "`workspace.resolver` missing or not set to 'v2'".to_string(),
-                    fix: Some(lint_cargo_toml_fix_resolver_v2),
-                });
-            }
-        }
+    if let Some(toml_edit::Item::Table(workspace)) = cargo_toml.get("workspace")
+        && !workspace_resolver_is_supported(workspace)
+    {
+        problems.push(LintItem {
+            path: path.clone(),
+            msg: "`workspace.resolver` missing or not set to '2' or '3'".to_string(),
+            fix: Some(lint_cargo_toml_fix_resolver_v2),
+        });
     }
     if cargo_toml
         .get("profile")
@@ -210,6 +206,14 @@ fn lint_cargo_toml(opts: &Opts, problems: &mut Vec<LintItem>) -> AppResult<()> {
         });
     }
     Ok(())
+}
+
+fn workspace_resolver_is_supported(workspace: &toml_edit::Table) -> bool {
+    matches!(
+        workspace.get("resolver"),
+        Some(toml_edit::Item::Value(toml_edit::Value::String(resolver)))
+            if resolver.value() == "2" || resolver.value() == "3"
+    )
 }
 
 #[derive(Deserialize)]
@@ -304,7 +308,9 @@ fn install_files(src: &Path, dst: &Path) -> AppResult<()> {
         } else {
             remove_file_or_symlink(&dst_path).change_context_lazy(|| AppError::IO)?;
             fs::copy(source_path, &dst_path).change_context_lazy(|| AppError::IO)?;
-            let _ = cmd!("git", "add", &dst_path).run();
+            if let Err(error) = cmd!("git", "add", &dst_path).run() {
+                tracing::debug!(%error, path = %dst_path.display(), "could not stage installed file");
+            }
 
             chmod_non_writable(&dst_path)?;
         }
@@ -364,7 +370,9 @@ fn init_logging() {
     let subscriber = tracing_subscriber::fmt()
         .with_writer(std::io::stderr) // Print to stderr
         .with_env_filter(
-            EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info")),
+            EnvFilter::builder()
+                .with_default_directive("info".parse().expect("info is a valid filter directive"))
+                .from_env_lossy(),
         )
         .finish();
 
@@ -374,6 +382,38 @@ fn init_logging() {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn cargo_workspace_resolver_accepts_current_versions() {
+        for resolver in ["2", "3"] {
+            let cargo_toml = format!("[workspace]\nresolver = \"{resolver}\"\n")
+                .parse::<toml_edit::DocumentMut>()
+                .expect("valid test manifest");
+            let workspace = cargo_toml["workspace"]
+                .as_table()
+                .expect("workspace is a table");
+
+            assert!(workspace_resolver_is_supported(workspace));
+        }
+    }
+
+    #[test]
+    fn cargo_workspace_resolver_rejects_stale_or_invalid_values() {
+        for manifest in [
+            "[workspace]\n",
+            "[workspace]\nresolver = \"1\"\n",
+            "[workspace]\nresolver = 3\n",
+        ] {
+            let cargo_toml = manifest
+                .parse::<toml_edit::DocumentMut>()
+                .expect("valid test manifest");
+            let workspace = cargo_toml["workspace"]
+                .as_table()
+                .expect("workspace is a table");
+
+            assert!(!workspace_resolver_is_supported(workspace));
+        }
+    }
 
     #[test]
     fn cargo_profile_defaults_disable_debug_info_and_preserve_inline_dev_settings() {
