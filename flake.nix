@@ -45,8 +45,8 @@
               rev = version;
               hash = "sha256-v4lPgZDPvRTAekkU9Vku9llgpOsaVtKt91VFUGrEeKw=";
             };
-            cargo = fenix.packages.${final.system}.latest.cargo;
-            rustc = fenix.packages.${final.system}.latest.rustc;
+            cargo = fenix.packages.${final.stdenv.hostPlatform.system}.latest.cargo;
+            rustc = fenix.packages.${final.stdenv.hostPlatform.system}.latest.rustc;
             rustPlatform = final.makeRustPlatform {
               inherit cargo rustc;
             };

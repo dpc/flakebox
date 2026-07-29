@@ -100,7 +100,7 @@ else
           # mold only supported on Linux, and supports compressed debug sections
           {
             "CARGO_TARGET_${target_underscores_upper}_RUSTFLAGS" =
-              "-C link-arg=-fuse-ld=${pkgs.mold-wrapped}/bin/mold -C link-arg=-Wl,--compress-debug-sections=zstd ${extraRustFlags}";
+              "-C link-arg=-fuse-ld=${pkgs.mold}/bin/mold -C link-arg=-Wl,--compress-debug-sections=zstd ${extraRustFlags}";
           }
         else if pkgs.stdenv.isLinux then
           # compressed debug sections, only supported on Linux
