@@ -18,7 +18,7 @@
     };
 
     android-nixpkgs = {
-      url = "github:tadfisher/android-nixpkgs?rev=d3cbdd2a82b3d054b4e283d28ba27548186a88e7"; # stable channel https://github.com/tadfisher/android-nixpkgs/tree/stable
+      url = "github:tadfisher/android-nixpkgs?rev=0afc63ee6baf0914918169427744cc09ee651ebc"; # upstream emulator build fix
       inputs.flake-utils.follows = "flake-utils";
       inputs.nixpkgs.follows = "nixpkgs";
     };
