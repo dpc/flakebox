@@ -37,25 +37,22 @@ fn main() -> AppResult<()> {
     match opts.command {
         Commands::Init => init(&opts)?,
         Commands::Install => install(&opts)?,
-        Commands::Docs { docs_dir } => docs_dir.map_or_else(
-            || {
+        Commands::Docs { docs_dir } => {
+            if let Some(docs_dir) = docs_dir {
+                let docs_index = docs_dir.join("index.html");
+                eprintln!("Opening docs available at {}", docs_index.display());
+                cmd!("xdg-open", docs_index)
+                    .run()
+                    .change_context(AppError::General)?;
+            } else {
                 cmd!("nix", "build", "github:rustshop/flakebox#docs")
                     .run()
                     .change_context(AppError::General)?;
                 cmd!("xdg-open", "result/index.html")
                     .run()
                     .change_context(AppError::General)?;
-                Ok::<(), error_stack::Report<AppError>>(())
-            },
-            |docs_dir| {
-                let docs_index = docs_dir.join("index.html");
-                eprintln!("Opening docs available at {}", docs_index.display());
-                cmd!("xdg-open", docs_index)
-                    .run()
-                    .change_context(AppError::General)?;
-                Ok::<(), error_stack::Report<AppError>>(())
-            },
-        )?,
+            }
+        }
         Commands::Lint { fix, silent } => match lint(&opts, fix, silent) {
             Err(e) if e.current_context() == &AppError::Lint => std::process::exit(1),
             other => other,

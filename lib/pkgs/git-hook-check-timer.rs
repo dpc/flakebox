@@ -174,21 +174,14 @@ fn main() {
                 "\n"
             };
             let warning_record = format!("{separator}{warning}\n");
-            let stderr_write_result = io::stderr().lock().write_all(warning_record.as_bytes());
-            if stderr_write_result.is_err() {
-                // Stderr is unavailable, so the diagnostic cannot be reported
-                // elsewhere.
-            }
+            let _ = io::stderr().lock().write_all(warning_record.as_bytes());
         }
     }
 
-    exit_like_check(
-        check_result
-            .unwrap_or_else(|error| {
-                timer_error(&format!("could not run check {check_name:?}: {error}"))
-            })
-            .status,
-    );
+    match check_result {
+        Ok(check_result) => exit_like_check(check_result.status),
+        Err(error) => timer_error(&format!("could not run check {check_name:?}: {error}")),
+    }
 }
 
 /// Streams hook stderr while replacing timer markers with a needed separator.
