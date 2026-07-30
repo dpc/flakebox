@@ -1,0 +1,46 @@
+id: push-str-format
+snapshots:
+  ? |
+    for value in values { output.push_str(&format!("{value}")); }
+  : labels:
+    - source: output.push_str(&format!("{value}"))
+      style: primary
+      start: 22
+      end: 58
+    - source: for value in values { output.push_str(&format!("{value}")); }
+      style: secondary
+      start: 0
+      end: 61
+  ? |
+    for value in values { output.push_str(format!("{value}").as_str()); }
+  : labels:
+    - source: output.push_str(format!("{value}").as_str())
+      style: primary
+      start: 22
+      end: 66
+    - source: for value in values { output.push_str(format!("{value}").as_str()); }
+      style: secondary
+      start: 0
+      end: 69
+  ? |
+    loop { output.push_str(format!("{value}").as_str()); }
+  : labels:
+    - source: output.push_str(format!("{value}").as_str())
+      style: primary
+      start: 7
+      end: 51
+    - source: loop { output.push_str(format!("{value}").as_str()); }
+      style: secondary
+      start: 0
+      end: 54
+  ? |
+    while ready() { output.push_str(&format!("{value}")); }
+  : labels:
+    - source: output.push_str(&format!("{value}"))
+      style: primary
+      start: 16
+      end: 52
+    - source: while ready() { output.push_str(&format!("{value}")); }
+      style: secondary
+      start: 0
+      end: 55

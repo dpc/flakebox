@@ -1,0 +1,15 @@
+id: silent-ok-discard
+valid:
+  - let value = operation().ok();
+  - return operation().ok();
+  - consume(operation().ok());
+  - operation().ok().is_some();
+  - |
+      #[test]
+      fn exercise() { operation().ok(); }
+  - |
+      #[cfg(test)]
+      mod tests { fn exercise() { operation().ok(); } }
+invalid:
+  - operation().ok();
+  - parse(input).ok();
