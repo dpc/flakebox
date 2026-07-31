@@ -51,6 +51,7 @@ in
         format_code_in_doc_comments = true
         imports_granularity = "Module"
         edition = "2024"
+        style_edition = "2024"
       '';
     })
 
